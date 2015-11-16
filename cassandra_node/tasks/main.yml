@@ -1,0 +1,95 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+# Current version use rpm packaging, which rely on init.d compatibility for systemd.
+# This generate two drawback:
+# - On cluster restart, some node does not restart, due to the fact (I guess) cassandra can start before network.
+# - On build, some nodes failed to start, and there is no restart.
+#
+#
+#
+
+# Use stat for reducing execution time in case of already installed.
+- stat: path=/etc/init.d/cassandra
+  register: cassandra
+
+- name: Install Cassandra node
+  yum:
+    name: "{{ cassandra_server_rpm_url }}"
+    state: present
+  when: not cassandra.stat.exists
+    
+    
+- name: Install Cassandra tools
+  yum:
+    name: "{{ cassandra_tools_rpm_url }}"
+    state: present
+    
+ # WARNING: JMX has been open to all network without authentication (See cassandra-env.sh). UNSECURE
+- name: Setup cassandra config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/cassandra/conf/{{ item }}"
+    owner: cassandra
+    group: cassandra
+    mode: 0755
+    backup: yes
+  notify:
+  - restart cassandra
+  with_items:
+  - cassandra-env.sh
+  - cassandra.yaml    
+ 
+
+- name: Launch cassandra services
+  service:
+    name: cassandra
+    state: started
+    enabled: yes          
+    
+
+# Use stat for reducing execution time in case of already installed.
+- stat: path=/etc/init.d/datastax-agent
+  register: datastax_agent
+   
+- name: Install datastax-agent (opscenter) tools
+  yum:
+    name: "{{ opscenter_agent_rpm_url }}"
+    state: present
+  when: not datastax_agent.stat.exists
+    
+      
+- name: Configure datastax-agent (opscenter) tools
+  template:
+    src: "address.yaml.j2"
+    dest: "/var/lib/datastax-agent/conf/address.yaml"
+    owner: cassandra
+    group: cassandra
+    mode: 0644
+    backup: yes
+  notify:
+  - restart datastax-agent
+  
+ 
+- name: Launch datastax-agent (opscenter) services
+  service:
+    name: datastax-agent
+    state: started
+    enabled: yes          
+    
+   
+  
+ 

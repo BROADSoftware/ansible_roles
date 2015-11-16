@@ -1,0 +1,16 @@
+NAME=eth0
+DEVICE=eth0
+ONBOOT=yes
+HOSTNAME={{ lxc_guest.name }}
+NM_CONTROLLED=yes
+IPV6INIT=no
+BOOTPROTO=none
+IPADDR={{ lxc_guest.ip_address }}
+NETMASK=255.255.255.0
+GATEWAY={{ lxc_host_ip_address }}
+{% for ip in  lxc_dns_ip_address.stdout_lines %}
+DNS{{ loop.index }}={{ ip }}
+{% endfor %}
+DOMAIN={{ lxc_guest_domain }}
+SEARCH={{ lxc_guest_domain }}
+

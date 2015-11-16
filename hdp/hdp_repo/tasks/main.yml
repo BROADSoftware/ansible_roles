@@ -1,0 +1,41 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+
+
+- name: Check repository_server variable is defined
+  fail: msg="'repository_server' variable must be defined."
+  when: repository_server is not defined
+
+
+
+- name: Set local Ambari repository
+  template: 
+    src: ambari.repo.j2
+    dest: /etc/yum.repos.d/ambari.repo
+    group: root
+    owner: root
+    mode: 0644
+
+- name: Set local HDP repository
+  template: 
+    src: hdp.repo.j2
+    dest: /etc/yum.repos.d/hdp.repo
+    group: root
+    owner: root
+    mode: 0644
+    
+    

@@ -1,0 +1,23 @@
+---
+
+# Install Docker on RedHat
+# Note than we update device-mapper, as performing a complete update of a vagrant box will break vagrant fs.
+
+- name: Create docker group
+  group:
+    name: docker
+    system: true
+    state: present
+- name: Update device-mapper (Requested by Docker and missing as dependancy)
+  yum:
+    name: device-mapper
+    state: latest
+- name: Install the latest docker on Centos
+  yum: 
+    name: docker
+    state: latest
+- name: Launch Docker (CentOS)
+  service:
+    name: docker
+    state: started
+    enabled: yes        

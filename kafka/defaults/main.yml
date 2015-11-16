@@ -1,0 +1,18 @@
+
+kafka_version: "2.10-0.8.2.2"
+
+kafka_tgz_url: "{{ misc_repository_url }}/kafka_{{ kafka_version }}.tgz"
+
+kafka_heap_opts: "-Xmx1G -Xms1G"
+ 
+# WARNING: This is kafka main log file. Nothing to do with INFO/DEBUG... log4j output
+# Think about dedicated disk in production environnement
+kafka_log_dir: "/var/lib/kafka"
+
+  
+kafka_delete_topic_enable: "false"
+
+kafka_auto_create_topics_enable: "true"
+
+kafka_jmx_port: 9010
+

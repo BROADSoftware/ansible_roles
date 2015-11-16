@@ -1,0 +1,10 @@
+---
+
+hive_version: "1.2.1"
+
+# Lookup in /opt/hive-{{ hive_version }}/scripts/metastore/upgrade/postgres
+hive_db_version: "1.2.0"
+
+
+hive_tgz_url: "{{ misc_repository_url }}/apache-hive-{{ hive_version }}-bin.tar.gz"
+

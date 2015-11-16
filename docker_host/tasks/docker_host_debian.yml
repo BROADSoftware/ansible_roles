@@ -1,0 +1,14 @@
+---
+
+# Install Docker on Debian:
+
+- name: Install the latest apparmor Ubuntu (Required by docker)
+  apt: 
+    name: apparmor
+    state: latest
+
+- name: Docker install. Take some time -> tail -f /tmp/docker_install.log  
+  shell: wget -qO- https://get.docker.com/ | sh >>docker_install.log
+  args:
+    chdir: /tmp
+    creates: /etc/init.d/docker

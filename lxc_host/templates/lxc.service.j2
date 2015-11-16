@@ -1,0 +1,18 @@
+[Unit]
+Description=LXC container launcher
+After=network.target
+
+[Service]
+User=root
+Group=root
+SyslogIdentifier=lxc
+TimeoutStartSec=60
+TimeoutStopSec=30
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/lxc-cmd up
+ExecStop=/bin/lxc-cmd halt
+
+[Install]
+WantedBy=multi-user.target
+

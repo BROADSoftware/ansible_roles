@@ -1,0 +1,15 @@
+---
+
+zk_version: "3.4.6"
+
+zookeeper_tgz_url: "{{ misc_repository_url }}/zookeeper-{{ zk_version }}.tar.gz"
+
+# WARNING: This is zookeper change log file. Nothing to do with INFO/DEBIG... log4j output
+zookeeper_log_dir: "/var/lib/zookeeper"
+
+# Better to put this on a physically separated disk, for performance issue
+zookeeper_snapshot_dir: "/var/lib/zookeeper"
+
+# Define this variable to enable remote access
+#zookeeper_jmx_port: 4888
+

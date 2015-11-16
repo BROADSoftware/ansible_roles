@@ -1,0 +1,8 @@
+---
+
+yum_repo_os_url: "http://{{ repository_server }}/centos/$releasever/os/$basearch/"
+yum_repo_updates_url: "http://{{ repository_server }}/centos/$releasever/updates/$basearch/"
+yum_repo_extras_url: "http://{{ repository_server }}/centos/$releasever/extras/$basearch/"
+yum_repo_centosplus_url: "http://{{ repository_server }}/centos/$releasever/centosplus/$basearch/"
+yum_repo_epel_url: "http://{{ repository_server }}/epel/$releasever/$basearch/"
+

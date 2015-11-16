@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<configuration>
+	<!-- ==================== Namenode configuration ===================== -->
+	
+     <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+    
+     <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>{{hdfs_nn_data_folder | join(",")}}</value>
+    </property>
+    
+     <property>
+        <name>dfs.blocksize</name>
+        <value>67108864</value>
+        <comment>64M</comment>
+    </property>
+	
+	<!-- ==================== Datanode configuration ===================== -->
+    
+     <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>{{hdfs_dn_data_folder | join(",")}}</value>
+    </property>
+	
+	<!-- ==================== Permissions configuration ===================== -->
+    
+    <property>
+      <name>dfs.permissions.enabled</name>
+      <value>true</value>
+    </property>
+
+    <property>
+      <name>dfs.permissions.superusergroup</name>
+      <value>hdfs</value>
+    </property>
+    
+</configuration>
+
+

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<configuration>
+
+    <property>
+      <name>hive.metastore.uris</name>
+      <value>thrift://{{ hostvars[groups['hive_metastore'][0]]['ansible_fqdn'] }}:9083</value>
+    </property>
+
+    <property>
+      <name>hive.metastore.warehouse.dir</name>
+      <value>/apps/hive/warehouse</value>
+    </property>
+
+    <property>
+      <name>hive.zookeeper.quorum</name>
+      <value>{% for host in groups['zookeepers'] %}{% if not loop.first %},{% endif %}{{  hostvars[host]['ansible_fqdn'] }}:2181{% endfor %}</value>
+    </property>
+
+    <property>
+      <name>javax.jdo.option.ConnectionURL</name>
+      <value>jdbc:postgresql://{{hostvars[groups['postgresql_server'][0]]['ansible_fqdn']}}:5432/hive</value>
+    </property>
+
+    <property>
+      <name>javax.jdo.option.ConnectionDriverName</name>
+      <value>org.postgresql.Driver</value>
+    </property>
+
+    <property>
+      <name>javax.jdo.option.ConnectionUserName</name>
+      <value>hive</value>
+    </property>
+
+    <property>
+      <name>javax.jdo.option.ConnectionPassword</name>
+      <value>{{postgresql_hive_db_password}}</value>
+    </property>
+
+
+</configuration>
+
+

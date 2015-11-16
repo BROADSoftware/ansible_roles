@@ -1,0 +1,92 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+
+- name: Install lxc package
+  yum: name=lxc,lxc-templates,lxc-doc state=installed
+  
+- name: add "lxc.kmsg = 0" in /usr/share/lxc/config/centos.common.conf
+  lineinfile:
+    dest: /usr/share/lxc/config/centos.common.conf
+    line: lxc.kmsg = 0
+    state: present
+    insertafter: EOF
+    
+- name: Do not drop setpcap and setfcap in /usr/share/lxc/config/centos.common.conf
+  replace :
+    dest: /usr/share/lxc/config/centos.common.conf
+    regexp: lxc.cap.drop = mac_admin mac_override setfcap setpcap
+    replace: lxc.cap.drop = mac_admin mac_override
+    
+- name: Do not drop sys_time in /usr/share/lxc/config/centos.common.conf (To allow ntpd)
+  replace :
+    dest: /usr/share/lxc/config/centos.common.conf
+    regexp: lxc.cap.drop = sys_rawio sys_time
+    replace: lxc.cap.drop = sys_rawio
+
+- name: Check if python2-lxc is installed
+  stat: path=/usr/lib64/python2.7/site-packages/lxc
+  register: python2_lxc_dir
+- name: Install python2-lxc
+  yum:
+    name: "{{ misc_repository_url }}/lxc-python2-0.1-1.x86_64.rpm"
+    state: present
+  when: not python2_lxc_dir.stat.exists
+    
+# We don't use a template to patch /etc/host as it may be also populated with guest definition
+- name: Patch /etc/hosts (1/3)
+  lineinfile: dest=/etc/hosts regexp='^127\.0\.0\.1' line='127.0.0.1 localhost' owner=root group=root mode=0644
+- name: Patch /etc/hosts (2/3)
+  lineinfile: dest=/etc/hosts regexp='^::1' line='::1 localhost' owner=root group=root mode=0644
+- name: Patch /etc/hosts (3/3)
+  lineinfile: dest=/etc/hosts line='{{lxc_host_ip_address}} {{ansible_hostname}} ' owner=root group=root mode=0644    
+
+- name: Disable IPv6 (1/2)
+  sysctl: name="net.ipv6.conf.all.disable_ipv6" value=1 sysctl_set=yes state=present reload=yes
+
+- name: Disable IPv6 (2/2)
+  sysctl: name="net.ipv6.conf.default.disable_ipv6" value=1 sysctl_set=yes state=present reload=yes
+
+
+- name: "Copy lxc-cmd"
+  template:
+    dest: /bin/lxc-cmd
+    src: lxc-cmd.j2
+    owner: root
+    group: root
+    mode: 0755
+    
+- name: Create lxc service
+  template:
+    src: lxc.service.j2
+    dest: /usr/lib/systemd/system/lxc.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: no
+  notify:
+  - reload service file
+    
+   
+- name: Enable lxc services
+  service:
+    name: lxc
+    enabled: yes        
+    
+    
+    
+    
+    

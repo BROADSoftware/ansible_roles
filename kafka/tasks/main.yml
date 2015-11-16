@@ -1,0 +1,111 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+- name: Create kafka group
+  group:
+    name: kafka
+    system: true
+    state: present
+
+- name: Create kafka user
+  user:
+    name: kafka
+    system: true
+    createhome: no
+    group: kafka
+    shell: /sbin/nologin
+    home: /tmp
+    state: present
+
+- name: Create /usr/share/java
+  file: path=/usr/share/java state=directory owner=root group=root mode=0755
+    
+- name: Create kafka folders
+  file: path={{ item }} state=directory owner=kafka group=kafka mode=0755
+  with_items:
+    - /var/log/kafka
+    - /usr/share/java/kafka
+    - /etc/kafka
+    - "{{ kafka_log_dir }}"
+
+ 
+- name: Copy kafka jars and scripts in place
+  script: setup.sh {{ kafka_tgz_url }} {{ kafka_version }} creates=/usr/share/java/kafka/kafka_{{ kafka_version }}.jar
+      
+
+ 
+- name: Setup kafka broker config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/kafka/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  notify:
+  - restart kafka
+  with_items:
+  - broker.properties
+  - broker-log4j.properties
+
+
+- name: Setup kafka client config
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/kafka/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  with_items:
+  - consumer.properties
+  - producer.properties
+  - tools-log4j.properties
+  
+    
+- name: Setup kafka commands
+  template:
+    src: "{{ item }}.j2"
+    dest: "/usr/bin/{{ item }}"
+    owner: root
+    group: root
+    mode: 0755
+    backup: yes
+  notify:
+  - restart kafka
+  with_items:
+  - kafka-run-class.sh
+  - kafka-server-start.sh
+ 
+- name: Create kafka service
+  template:
+    src: kafka.service.j2
+    dest: /usr/lib/systemd/system/kafka.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: no
+  notify:
+  - restart kafka
+  - reload service file      
+   
+- name: Enable kafka services
+  service:
+    name: kafka
+    enabled: yes        
+    
+    
+    

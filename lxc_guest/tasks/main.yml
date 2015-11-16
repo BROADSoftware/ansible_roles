@@ -1,0 +1,182 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+
+- name: Check lxc_guest.name variable is defined
+  fail: msg="'lxc_guest.name' variable must be defined."
+  when: lxc_guest.name is not defined
+
+- name: Check lxc_guest.ip_address variable is defined
+  fail: msg="'lxc_guest.ip_address' variable must be defined."
+  when: lxc_guest.ip_address is not defined
+
+- name: Check lxc_guest_host_key_location variable is defined
+  fail: msg="'lxc_guest_host_key_location' variable must be defined."
+  when: lxc_guest_host_key_location is not defined
+
+- name: Check repository_server variable is defined
+  fail: msg="'repository_server' variable must be defined."
+  when: repository_server is not defined
+
+- name: Check local_user_account variable is defined
+  fail: msg="'local_user_account' variable must be defined."
+  when: local_user_account is not defined
+
+- name: Check target_inventory_file variable is defined
+  fail: msg="'target_inventory_file' variable must be defined."
+  when: target_inventory_file is not defined
+
+
+- name: Check if {{lxc_guest.name}} allready created
+  stat: path="/var/lib/lxc/{{lxc_guest.name}}/rootfs/"
+  register: lxc_rootfs_dir  
+
+- name: Create {{lxc_guest.name}} container
+  lxc_container:
+    name: "{{lxc_guest.name}}"
+    container_log: true
+    template: download
+    template_options: "{{ lxc_template_options_centos7 }}"
+    state: stopped
+  when: not lxc_rootfs_dir.stat.exists
+  
+- name: Document {{ansible_hostname}} /etc/hosts 
+  lineinfile: dest=/etc/hosts regexp='^{{lxc_guest.ip_address}}' line='{{lxc_guest.ip_address}} {{lxc_guest.name}}.{{lxc_guest_domain}} {{lxc_guest.name}}' owner=root group=root mode=0644  
+
+- name: Document local inventory
+  local_action: lineinfile dest='{{target_inventory_file}}' create=yes state=present regexp='^{{lxc_guest.name}} ansible_ssh_host' line='{{lxc_guest.name}} ansible_ssh_host={{lxc_guest.name}}.{{lxc_guest_domain}} ansible_ssh_user=root ansible_ssh_private_key_file=../.vagrant/machines/{{ ansible_hostname }}/virtualbox/private_key'  
+  sudo: false
+  become_user: "{{ local_user_account }}"
+  
+- name: Get DNS from host
+  shell: 'cat /etc/resolv.conf | grep -Eo "nameserver[ \t]*([0-9]*\.){3}[0-9]" | grep -Eo "([0-9]*\.){3}[0-9]"'
+  register: lxc_dns_ip_address     
+  always_run: yes
+  changed_when: false
+
+- name: "{{lxc_guest.name}}: Configure container network interface"
+  template:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+    src: ifcfg-eth0.j2
+
+- name: "{{lxc_guest.name}}: Configure container network file"
+  template:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/sysconfig/network
+    src: network.j2
+    
+- name: "{{lxc_guest.name}}: Create folder for root ssh key"
+  file: path=/var/lib/lxc/{{lxc_guest.name}}/rootfs/root/.ssh/ owner=root group=root mode=0700 state=directory
+
+- name: "{{lxc_guest.name}}: Inject ssh root key"
+  shell: cp /home/vagrant/.ssh/authorized_keys /var/lib/lxc/{{lxc_guest.name}}/rootfs/root/.ssh/authorized_keys
+  args:
+    creates: /var/lib/lxc/{{lxc_guest.name}}/rootfs/root/.ssh/authorized_keys
+
+- name: "{{lxc_guest.name}}: Adjust rights for authorized_keys file"
+  file: path=/var/lib/lxc/{{lxc_guest.name}}/rootfs/root/.ssh/authorized_keys owner=root group=root mode=0600
+
+- name: "{{lxc_guest.name}}: Set root password"
+  replace: 
+    dest: /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/shadow
+    regexp: "root:[^:]*:0:0.*"
+    replace: "root:$6$LfvmxU9s$CbeRJ/KqreYfL7wC8Bl2hDfKzXBLv1ElXR3mBj6xU/d/3/RNO/fzqGRltAjPW22QwKI7I3dcdRWCKNWGP6nec/:16727:0:99999:7:::"
+
+- name: "{{lxc_guest.name}}: Setup local yum repository"
+  shell: cp -r /etc/yum.repos.d/*  /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/yum.repos.d; cp /etc/pki/rpm-gpg/*  /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/pki/rpm-gpg/
+  args:
+    creates: /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+        
+- name: "{{lxc_guest.name}}: Inject host key"
+  copy: 
+    src: "{{lxc_guest_host_key_location}}/"
+    dest: /var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/ssh/
+        
+- name: "{{lxc_guest.name}}: Adjust rights for host key private file"
+  file: path=/var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/ssh/ssh_host_rsa_key owner=root group=root mode=0600
+
+- name: "{{lxc_guest.name}}: Adjust rights for host key public file"
+  file: path=/var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/ssh/ssh_host_rsa_key.pub owner=root group=root mode=0600
+
+- name: "{{lxc_guest.name}}: Create mount point on host"
+  file: path={{item.host_path}} state=directory  owner={{item.host_path_owner|default("root")}} group={{item.host_path_group|default("root")}} mode={{item.host_path_mode|default(0755)}}
+  with_items: lxc_guest.volumes
+  when: lxc_guest.volumes is defined
+  
+- name: "{{lxc_guest.name}}: Create mount point on guest"
+  file: path=/var/lib/lxc/{{lxc_guest.name}}/rootfs/{{item.guest_path}} state=directory  owner={{item.guest_path_owner|default("root")}} group={{item.guest_path_group|default("root")}} mode={{item.guest_path_mode|default(0755)}}
+  with_items: lxc_guest.volumes
+  when: lxc_guest.volumes is defined
+
+  
+- name: "{{lxc_guest.name}}: Add 'lxc.mount = fstab' in container config file"
+  lineinfile:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/config
+    line: "lxc.mount = /var/lib/lxc/{{lxc_guest.name}}/fstab"
+    state: present
+    insertafter: EOF
+     
+- name: "{{lxc_guest.name}}: Create fstab"
+  template:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/fstab
+    src: fstab.j2
+  notify:
+  - "{{lxc_guest.name}}: Stop container"
+  - "{{lxc_guest.name}}: Start container"
+
+
+  
+- name: "{{lxc_guest.name}}: Add 'lxc.cgroup.memory.limit_in_bytes = {{lxc_guest.memory_limit|default(\"256G\")}}' in container config file"
+  lineinfile:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/config
+    line: "lxc.cgroup.memory.limit_in_bytes = {{lxc_guest.memory_limit|default(\"256G\")}}"
+    state: present
+    regexp: "lxc.cgroup.memory.limit_in_bytes =.*"
+    insertafter: EOF
+  
+- name: "{{lxc_guest.name}}: Add 'lxc.cgroup.memory.memsw.limit_in_bytes = {{lxc_guest.memory_memsw_limit|default(\"256G\")}}' in container config file"
+  lineinfile:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/config
+    line: "lxc.cgroup.memory.memsw.limit_in_bytes = {{lxc_guest.memory_memsw_limit|default(\"256G\")}}"
+    state: present
+    regexp: "lxc.cgroup.memory.memsw.limit_in_bytes =.*"
+    insertafter: EOF
+  
+- name: "{{lxc_guest.name}}: Add 'lxc.cgroup.memory.soft_limit_in_bytes = {{lxc_guest.memory_soft_limit|default(\"256G\")}}' in container config file"
+  lineinfile:
+    dest: /var/lib/lxc/{{lxc_guest.name}}/config
+    line: "lxc.cgroup.memory.soft_limit_in_bytes = {{lxc_guest.memory_soft_limit|default(\"256G\")}}"
+    state: present
+    regexp: "lxc.cgroup.memory.soft_limit_in_bytes =.*"
+    insertafter: EOF
+
+
+- name: "{{lxc_guest.name}}: Check if ssh server is allready created"
+  stat: path="/var/lib/lxc/{{lxc_guest.name}}/rootfs/etc/ssh/sshd_config"
+  register: lxc_sshd_config
+               
+- name: "{{lxc_guest.name}}: Setup sshd server"
+  lxc_container:
+    name: "{{lxc_guest.name}}"
+    container_log: true
+    container_command: |
+      until curl {{repository_server}} >/dev/null 2>&1; do sleep 1; done
+      yum install -y openssh-server
+      systemctl enable sshd
+      systemctl start sshd
+  when: not lxc_sshd_config.stat.exists
+
+    
+      

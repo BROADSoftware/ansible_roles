@@ -1,0 +1,19 @@
+[Unit]
+Description=HDFS Data Node 
+
+[Service]
+User=hdfs
+Group=hadoop
+SyslogIdentifier=hdfs_dn
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=always
+Type=forking
+PIDFile=/var/run/hdfs/hadoop-hdfs-datanode.pid
+ExecStart=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/hadoop-daemon.sh --script hdfs start datanode
+ExecStop=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/hadoop-daemon.sh --script hdfs stop datanode
+
+[Install]
+WantedBy=multi-user.target
+
+

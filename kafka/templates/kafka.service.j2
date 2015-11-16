@@ -1,0 +1,14 @@
+[Unit]
+Description=Kafka publish-subscribe messaging system
+
+[Service]
+User=kafka
+Group=kafka
+SyslogIdentifier=kafka
+TimeoutSec=15
+Restart=always
+ExecStart=/bin/bash /usr/bin/kafka-server-start.sh /etc/kafka/broker.properties
+
+[Install]
+WantedBy=multi-user.target
+

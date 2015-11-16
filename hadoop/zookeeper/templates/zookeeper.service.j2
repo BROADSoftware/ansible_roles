@@ -1,0 +1,41 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[Unit]
+Description=Zookeeper distributed coordination server
+After=network.target
+
+[Service]
+User=zookeeper
+Group=zookeeper
+SyslogIdentifier=zookeeper
+ExecStart=/usr/bin/java \
+  -Dzookeeper.log.dir=/var/log/zookeeper \
+  -Dzookeeper.root.logger=INFO,ROLLINGFILE \
+  -cp /usr/share/java/zookeeper/* \
+  -Dcom.sun.management.jmxremote \
+  -Dlog4j.configuration=file:/etc/zookeeper/srv.log4j.properties \
+{% if zookeeper_jmx_port is defined %}
+  -Dcom.sun.management.jmxremote.local.only=false \
+  -Dcom.sun.management.jmxremote.port={{ zookeeper_jmx_port }} \
+  -Dcom.sun.management.jmxremote.authenticate=false \
+  -Dcom.sun.management.jmxremote.ssl=false \
+{% endif %}
+  org.apache.zookeeper.server.quorum.QuorumPeerMain \
+  /etc/zookeeper/zoo.cfg
+
+
+[Install]
+WantedBy=multi-user.target

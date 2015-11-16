@@ -1,0 +1,18 @@
+[Unit]
+Description=Mapreduce2 History server
+
+[Service]
+User=mapred
+Group=hadoop
+SyslogIdentifier=mapred_hs
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=always
+Type=forking
+PIDFile=/var/run/mapred/mapred-mapred-historyserver.pid
+ExecStart=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/mr-jobhistory-daemon.sh start historyserver
+ExecStop=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/mr-jobhistory-daemon.sh stop historyserver
+
+[Install]
+WantedBy=multi-user.target
+

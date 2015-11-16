@@ -1,0 +1,7 @@
+---
+# Dependencies for ant_ivy role
+
+dependencies:
+  - { role: yaegashi.blockinfile }
+ 
+  

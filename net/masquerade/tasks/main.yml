@@ -1,0 +1,35 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+- name: Install iptables.services
+  yum: name=iptables-services state=installed
+
+- name: Check if MASQUERADE already set
+  shell: iptables -t nat -L -v
+  register: iptables_nat_rules
+  always_run: yes
+  changed_when: false
+
+- name: Apply MASQUERADE
+  shell: "iptables -t nat -A POSTROUTING -o {{ masquerade_out_interface }} -j MASQUERADE; /usr/libexec/iptables/iptables.init save"
+  when: iptables_nat_rules.stdout.find("MASQUERADE") == -1
+  
+- name: Start the iptables.services
+  service: name=iptables.service state=started enabled=yes
+
+- name: Enable IP routing
+  sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes
+  

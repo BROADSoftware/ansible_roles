@@ -1,0 +1,56 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+     
+# Ant install (Don't use yum, as it would install open-jdk)
+- stat: path=/opt/apache-ant-{{ ant_version }}
+  register: ant_install    
+- name: Download ant
+  get_url: url={{ ant_tgz_url }} dest=/tmp
+  when: not ant_install.stat.exists
+- name: Unpack ant
+  unarchive: copy=no creates=/opt/apache-ant-{{ ant_version }} dest=/opt src=/tmp/apache-ant-{{ ant_version }}-bin.tar.gz owner=root group=root mode=0755
+- name: Add ant in user path
+  blockinfile:
+    dest: /home/{{ ant_ivy_user }}/.bashrc
+    backup: yes
+    insertafter: EOF
+    marker: "# {mark} Ansible managed block for ANT"
+    content: |
+      export ANT_HOME=/opt/apache-ant-{{ ant_version }};
+      PATH=$PATH:$ANT_HOME/bin
+- name: Cleanup /tmp
+  file: path=/tmp/apache-ant-{{ ant_version }}-bin.tar.gz state=absent
+
+      
+# Ivy install 
+- stat: path=/home/{{ ant_ivy_user }}/.ant/lib/ivy-{{ ivy_version }}.jar 
+  register: ivy_jar
+- name: Download ivy
+  get_url: url={{ ivy_tgz_url }} dest=/tmp
+  when: not ivy_jar.stat.exists
+- name: Unpack ivy
+  unarchive: copy=no creates=/tmp/apache-ivy-{{ ivy_version }} dest=/tmp src=/tmp/apache-ivy-{{ ivy_version }}-bin.tar.gz owner=root group=root mode=0755
+  when: not ivy_jar.stat.exists
+- name: create $HOME/.ant/lib
+  file: path=/home/{{ ant_ivy_user }}/.ant/lib state=directory owner={{ ant_ivy_user }} group={{ ant_ivy_user }} mode=0755
+- name: Move ivy to $HOME/.m2/lib
+  command: cp /tmp/apache-ivy-{{ ivy_version }}/ivy-{{ ivy_version }}.jar /home/{{ ant_ivy_user }}/.ant/lib
+  when: not ivy_jar.stat.exists
+- name: Cleanup /tmp
+  file: path=/tmp/apache-ivy-{{ ivy_version }}-bin.tar.gz state=absent
+- name: Cleanup /tmp
+  file: path=/tmp/apache-ivy-{{ ivy_version }} state=absent

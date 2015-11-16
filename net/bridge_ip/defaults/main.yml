@@ -1,0 +1,11 @@
+
+
+bridge_bridge_interface: virbr0
+
+# Default ok in vagrant context
+bridge_primary_interface: enp0s8
+
+bridge_ip_netmask: 255.255.255.0
+
+
+

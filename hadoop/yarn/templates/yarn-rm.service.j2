@@ -1,0 +1,18 @@
+[Unit]
+Description=YARN Resource Manager 
+
+[Service]
+User=yarn
+Group=hadoop
+SyslogIdentifier=yarn_rm
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=always
+Type=forking
+PIDFile=/var/run/yarn/yarn-yarn-resourcemanager.pid
+ExecStart=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/yarn-daemon.sh start resourcemanager
+ExecStop=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/yarn-daemon.sh stop resourcemanager
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,17 @@
+
+network_ether_interfaces:
+  - name: "{{ bridge_bridge_interface }}"
+    nm_controlled: "no"
+    device: "{{ bridge_bridge_interface }}"  
+    bootproto: static
+    type: Bridge
+    onboot: "yes"
+    address: "{{ bridge_ip_address }}"
+    netmask: "{{ bridge_ip_netmask }}"
+  - name: "{{ bridge_primary_interface }}"
+    nm_controlled: "no"
+    device: "{{ bridge_primary_interface }}"       
+    bootproto: static
+    onboot: "yes"
+    bridge: "{{ bridge_bridge_interface }}"
+

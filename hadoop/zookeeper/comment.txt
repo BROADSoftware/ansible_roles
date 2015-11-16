@@ -1,0 +1,30 @@
+
+
+cd xx
+wget 10.0.2.2/repo/misc/zookeeper-3.4.6.tar.gz
+tar xvzf zookeeper-3.4.6.tar.gz
+
+From manual installation
+sa        3172     1  2 08:10 pts/0    00:00:00 java -Dzookeeper.log.dir=. -Dzookeeper.root.logger=INFO,CONSOLE 
+-cp /home/sa/zk/zookeeper-3.4.6/bin/../build/classes:/home/sa/zk/zookeeper-3.4.6/bin/../build/lib/*.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/slf4j-log4j12-1.6.1.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/slf4j-api-1.6.1.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/netty-3.7.0.Final.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/log4j-1.2.16.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/jline-0.9.94.jar:/home/sa/zk/zookeeper-3.4.6/bin/../zookeeper-3.4.6.jar:/home/sa/zk/zookeeper-3.4.6/bin/../src/java/lib/*.jar:/home/sa/zk/zookeeper-3.4.6/bin/../conf: 
+-Dcom.sun.management.jmxremote 
+-Dcom.sun.management.jmxremote.local.only=false 
+org.apache.zookeeper.server.quorum.QuorumPeerMain /home/sa/zk/zookeeper-3.4.6/bin/../conf/zoo.cfg
+
+
+bin/zkCli.sh -server 127.0.0.1:2181
+
+sa        3199  3083  0 08:14 pts/0    00:00:00 bash bin/zkCli.sh -server 127.0.0.1:2181
+sa        3204  3199  0 08:14 pts/0    00:00:00 java -Dzookeeper.log.dir=. -Dzookeeper.root.logger=INFO,CONSOLE 
+-cp /home/sa/zk/zookeeper-3.4.6/bin/../build/classes:/home/sa/zk/zookeeper-3.4.6/bin/../build/lib/*.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/slf4j-log4j12-1.6.1.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/slf4j-api-1.6.1.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/netty-3.7.0.Final.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/log4j-1.2.16.jar:/home/sa/zk/zookeeper-3.4.6/bin/../lib/jline-0.9.94.jar:/home/sa/zk/zookeeper-3.4.6/bin/../zookeeper-3.4.6.jar:/home/sa/zk/zookeeper-3.4.6/bin/../src/java/lib/*.jar:/home/sa/zk/zookeeper-3.4.6/bin/../conf: 
+org.apache.zookeeper.ZooKeeperMain -server 127.0.0.1:2181
+
+
+
+From this install (zookeeper.servive
+zookeep+  3937     1  0 07:46 ?        00:00:05 /usr/bin/java -Dzookeeper.log.dir=/var/log/zookeeper -Dzookeeper.root.logger=INFO,ROLLINGFILE 
+-cp /usr/share/java/zookeeper/* 
+-Dlog4j.configuration=file:/etc/zookeeper/log4j.properties 
+-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false 
+org.apache.zookeeper.server.quorum.QuorumPeerMain /etc/zookeeper/zoo.cfg
+

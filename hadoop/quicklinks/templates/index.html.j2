@@ -1,0 +1,24 @@
+<html>
+	<head>
+		<title>Quicklinks</title>
+	</head>
+<body>
+
+	{% if groups['hdfs_nn'] is defined and hostvars[groups['hdfs_nn'][0]] is defined %}
+		<p><a href="http://{{ hostvars[groups['hdfs_nn'][0]]['ansible_fqdn'] }}:50070/" target="hdfs_nn">Namenode</a></p>
+	{% endif %}
+
+	{% if groups['yarn_rm'] is defined and hostvars[groups['yarn_rm'][0]] is defined %}
+		<p><a href="http://{{ hostvars[groups['yarn_rm'][0]]['ansible_fqdn'] }}:8088/" target="yarn_rm">Resource Manager</a></p>
+	{% endif %}
+
+	{% if groups['mapred_hs'] is defined and hostvars[groups['mapred_hs'][0]] is defined %}
+		<p><a href="http://{{ hostvars[groups['mapred_hs'][0]]['ansible_fqdn'] }}:19888/" target="mapred_hs">Job History Server</a></p>
+	{% endif %}
+
+	{% if groups['kafka_managers'] is defined and hostvars[groups['kafka_managers'][0]] is defined %}
+		<p><a href="http://{{ hostvars[groups['kafka_managers'][0]]['ansible_fqdn'] }}:9000/" target="kafka_managers">Kafka Manager</a></p>
+	{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+---
+
+maven_version: "3.3.3"
+
+maven_tgz_url: "{{ misc_repository_url }}/apache-maven-{{ maven_version }}-bin.tar.gz"

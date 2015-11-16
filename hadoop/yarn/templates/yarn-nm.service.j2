@@ -1,0 +1,18 @@
+[Unit]
+Description=YARN Node Manager 
+
+[Service]
+User=yarn
+Group=hadoop
+SyslogIdentifier=yarn_nm
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=always
+Type=forking
+PIDFile=/var/run/yarn/yarn-yarn-nodemanager.pid
+ExecStart=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/yarn-daemon.sh start nodemanager
+ExecStop=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/yarn-daemon.sh stop nodemanager
+
+[Install]
+WantedBy=multi-user.target
+

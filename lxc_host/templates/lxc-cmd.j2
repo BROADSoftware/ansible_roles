@@ -1,0 +1,53 @@
+#!/bin/bash
+
+
+function usage() {
+	echo -e "USAGE:"
+	echo -e "\tlxc-cmd status"
+	echo -e "\tlxc-cmd up"
+	echo -e "\tlxc-cmd halt"
+	echo -e ""
+	exit 1
+}
+
+CMD=$1
+
+if [ -z "${CMD}" ]
+then
+	usage
+fi
+
+case $CMD in
+	"status" | "state") ;;
+	"up" | "start") ;;
+	"halt" | "down" | "stop" | "shutdown") ;;
+	*)
+		usage
+	;;
+esac
+
+for CONTAINER in $(lxc-ls)
+do
+	case $CMD in
+		"status"| "state")
+			echo -e "$CONTAINER:\c"
+			lxc-info -n $CONTAINER | grep State
+		;;
+		"up"| "start")
+			echo -e "$CONTAINER:\c"
+			lxc-start -n $CONTAINER -d >/dev/null 2>&1
+			lxc-info -n $CONTAINER | grep State
+		;;
+		"halt" | "down" | "stop" | "shutdown") 
+			echo -e "$CONTAINER:\c"
+			lxc-stop -t 1 -n $CONTAINER  >/dev/null 2>&1
+			lxc-info -n $CONTAINER | grep State
+		;;
+		*)
+			usage
+		::
+	esac
+done
+
+exit 0
+

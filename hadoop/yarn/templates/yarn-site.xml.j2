@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<configuration>
+  <property>
+    <name>yarn.resourcemanager.scheduler.class</name>
+    <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.vmem-pmem-ratio</name>
+    <value>10</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value>{{ hostvars[groups['yarn_rm'][0]]['ansible_fqdn'] }}</value>
+  </property>
+</configuration>
+
+

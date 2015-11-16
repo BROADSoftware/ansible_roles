@@ -1,0 +1,6 @@
+
+{% if lxc_guest.volumes is defined %}
+{% for vol in lxc_guest.volumes %}
+{{ vol.host_path }} {{ vol.guest_path }} none {{ vol.options|default("bind") }} 0 0
+{% endfor %}
+{% endif %}

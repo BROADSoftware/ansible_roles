@@ -1,0 +1,8 @@
+
+# These are default accurate when the target is configured with standart ssh.
+selinux_with_reboot_host_to_probe: "{{ inventory_hostname }}"
+selinux_with_reboot_port_to_probe: 22
+
+# In case of 'vagrant builded' box, one may set (Port may change. Check vagrant generated inventory file)
+#selinux_with_reboot_host_to_probe: 127.0.0.1
+#selinux_with_reboot_port_to_probe: 2222

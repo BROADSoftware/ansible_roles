@@ -1,0 +1,7 @@
+---
+# Dependencies for maven role
+
+dependencies:
+  - { role: yaegashi.blockinfile }
+ 
+  

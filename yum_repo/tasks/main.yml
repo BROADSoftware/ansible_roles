@@ -1,0 +1,72 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+
+- name: Set local yum Base repository
+  template: 
+    src: CentOS-Base.repo.j2
+    dest: /etc/yum.repos.d/CentOS-Base.repo
+    group: root
+    owner: root
+    mode: 0644
+  when: repository_server is defined
+
+- name: Set local yum EPEL repository
+  template: 
+    src: epel.repo.j2
+    dest: /etc/yum.repos.d/epel.repo
+    group: root
+    owner: root
+    mode: 0644    
+  when: repository_server is defined
+
+- name: Copy EPEL PGP key
+  copy:
+    src: RPM-GPG-KEY-EPEL-7
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+
+- name: Set std (Official) yum Base repository
+  copy: 
+    src: CentOS-Base.repo
+    dest: /etc/yum.repos.d/CentOS-Base.repo
+    group: root
+    owner: root
+    mode: 0644
+  when: repository_server is not defined
+
+- name: Set std (Official) yum EPEL repository
+  copy: 
+    src: epel.repo
+    dest: /etc/yum.repos.d/epel.repo
+    group: root
+    owner: root
+    mode: 0644    
+  when: repository_server is not defined
+
+
+- name: Install Internet EPEL repo.
+  yum:
+    name: epel-release
+    state: present
+  when: repository_server is not defined
+
+
+- name: Import EPEL GPG key.
+  rpm_key:
+    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    state: present
+    
+  

@@ -1,0 +1,5 @@
+---
+
+#jdk_rpm_url: "{{ misc_repository_url }}/jdk-7u79-linux-x64.rpm"
+#jdk_rpm_url: "{{ misc_repository_url }}/jdk-8u60-linux-x64.rpm"
+jdk_rpm_url: "{{ misc_repository_url }}/jdk-8u65-linux-x64.rpm"

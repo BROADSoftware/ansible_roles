@@ -1,0 +1,62 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+
+- name: Setup posgresql JDBC driver
+  get_url: url="{{ misc_repository_url }}/{{postgresql_jdbc_jar}}" dest=/opt/hive-{{hive_version}}/lib/{{postgresql_jdbc_jar}}
+    
+- name: Create hive postgresql hive user
+  postgresql_user: name=hive password={{postgresql_hive_db_password}} role_attr_flags=CREATEDB,SUPERUSER login_unix_socket=/var/run/postgresql
+  become: yes
+  become_user: postgres
+
+- name: Create Hive database
+  postgresql_db: name=hive owner=hive  login_unix_socket=/var/run/postgresql encoding='UTF-8' template='template0'
+  become: yes
+  become_user: postgres
+
+- name: Check for Hive database schema
+  shell: sudo -u hive psql  --dbname hive --command 'SELECT * FROM "DBS";'
+  register: psql_result
+  failed_when: false
+  changed_when: false
+- name: Create Hive database schema
+  shell: cd /opt/hive-{{ hive_version }}/scripts/metastore/upgrade/postgres; sudo -u hive psql  --dbname hive --file hive-schema-{{ hive_db_version }}.postgres.sql
+  when: psql_result.rc != 0
+
+   
+
+
+# --------------------------- Service tuff  
+
+- name: Create hive-metastore service
+  template:
+    src: "hive-metastore.service.j2"
+    dest: "/usr/lib/systemd/system/hive-metastore.service"
+    owner: root
+    group: root
+    mode: 0644
+    backup: no
+  notify:
+  - reload service file
+  - restart hive-metastore  
+
+- name: Enable hive-metastore services
+  service:
+    name: hive-metastore
+    enabled: yes 
+    
+  
