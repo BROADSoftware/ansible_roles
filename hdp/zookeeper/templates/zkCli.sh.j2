@@ -1,0 +1,19 @@
+export ZOOCFGDIR=/etc/zookeeper; 
+export CLIENT_JVMFLAGS="${CLIENT_JVMFLAGS} -Dlog4j.configuration=file:/etc/zookeeper/cli.log4j.properties"
+/usr/hdp/current/zookeeper-server/bin/zkCli.sh
+exit 0
+
+
+JAVA=/usr/bin/java
+ZOO_LOG_DIR=.
+CLASSPATH=/usr/share/java/zookeeper/*
+
+if [ $# -eq 0 ]; then
+	DEF="-server 127.0.0.1:2181"
+fi
+
+"$JAVA" "-Dzookeeper.log.dir=${ZOO_LOG_DIR}" "-Dlog4j.configuration=file:/etc/zookeeper/cli.log4j.properties" \
+     -cp "$CLASSPATH" $CLIENT_JVMFLAGS $JVMFLAGS \
+     org.apache.zookeeper.ZooKeeperMain $DEF "$@"
+     
+     

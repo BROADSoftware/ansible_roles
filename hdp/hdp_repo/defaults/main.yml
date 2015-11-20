@@ -4,7 +4,7 @@ yum_repo_hdp_ambari_url: "{{ hdp_repository_url }}/AMBARI-2.1.2/centos7/"
 yum_repo_hdp_ambari_key_url: "{{ hdp_repository_url }}/AMBARI-2.1.2/centos7/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins"
 
 yum_repo_hdp_hdp_url: "{{ hdp_repository_url }}/HDP/centos7/2.x/updates/2.3.2.0/"
-yum_repo_hdp_hdp_key_url: "{{ hdp_repository_url }}/HDP/centos7/2.x/updates/2.3.2.0/RPM-GPG-KEY/"
+yum_repo_hdp_hdp_key_url: "{{ hdp_repository_url }}/HDP/centos7/2.x/updates/2.3.2.0/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins"
 
 yum_repo_hdp_hdp_utils_url: "{{ hdp_repository_url }}/HDP-UTILS-1.1.0.20/repos/centos7"
 yum_repo_hdp_hdp_utils_key_url: "{{ hdp_repository_url }}/HDP-UTILS-1.1.0.20/repos/centos7/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins"

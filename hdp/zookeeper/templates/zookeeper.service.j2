@@ -1,0 +1,19 @@
+[Unit]
+Description=Zookeeper distributed coordination server
+After=network.target
+
+[Service]
+User=zookeeper
+Group=hadoop
+SyslogIdentifier=zookeeper
+TimeoutStartSec=60
+TimeoutStopSec=30
+Restart=always
+Type=forking
+PIDFile=/var/run/zookeeper/zookeeper_server.pid
+ExecStart=/bin/bash -c "export ZOOCFGDIR=/etc/zookeeper; export JVMFLAGS=-Dlog4j.configuration=file:/etc/zookeeper/srv.log4j.properties;  /usr/hdp/current/zookeeper-server/bin/zkServer.sh start"
+ExecStop=/bin/bash -c "export ZOOCFGDIR=/etc/zookeeper; /usr/hdp/current/zookeeper-server/bin/zkServer.sh stop"
+
+[Install]
+WantedBy=multi-user.target
+
