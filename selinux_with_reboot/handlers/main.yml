@@ -21,7 +21,14 @@
   ignore_errors: true
   sudo: true
 
-- name: waiting
-  local_action: wait_for host={{ selinux_with_reboot_host_to_probe }}  port={{ selinux_with_reboot_port_to_probe }}  delay=5
+- name: waiting1
+  local_action: wait_for host={{ selinux_with_reboot_host_to_probe }}  port={{ selinux_with_reboot_port_to_probe }}  delay={{ selinux_with_reboot_delay }} timeout={{ selinux_with_reboot_timeout  }}
   sudo: false
   become_user: "{{ local_user_account }}"
+  when: local_user_account is defined
+
+- name: waiting2 
+  local_action: wait_for host={{ selinux_with_reboot_host_to_probe }}  port={{ selinux_with_reboot_port_to_probe }}  delay={{ selinux_with_reboot_delay }} timeout={{ selinux_with_reboot_timeout  }}
+  sudo: false
+  when: local_user_account is not defined
+  

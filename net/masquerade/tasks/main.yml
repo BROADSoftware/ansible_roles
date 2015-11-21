@@ -14,9 +14,14 @@
 #limitations under the License.
 #
 
-- name: Install iptables.services
+- name: Install iptables.services (Centos7)
   yum: name=iptables-services state=installed
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
 
+- name: Install iptables (Centos6)
+  yum: name=iptables state=installed
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
+  
 - name: Check if MASQUERADE already set
   shell: iptables -t nat -L -v
   register: iptables_nat_rules
@@ -24,11 +29,16 @@
   changed_when: false
 
 - name: Apply MASQUERADE
-  shell: "iptables -t nat -A POSTROUTING -o {{ masquerade_out_interface }} -j MASQUERADE; /usr/libexec/iptables/iptables.init save"
+  shell: "iptables -t nat -A POSTROUTING -o {{ masquerade_out_interface }} -j MASQUERADE; iptables-save > /etc/sysconfig/iptables"
   when: iptables_nat_rules.stdout.find("MASQUERADE") == -1
   
-- name: Start the iptables.services
+- name: Start the iptables.services (Centos7)
   service: name=iptables.service state=started enabled=yes
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
+
+- name: Start the iptables services (Centos6)
+  service: name=iptables state=started enabled=yes
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "6"
 
 - name: Enable IP routing
   sysctl: name="net.ipv4.ip_forward" value=1 sysctl_set=yes state=present reload=yes

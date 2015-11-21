@@ -14,14 +14,18 @@
 #limitations under the License.
 #
 
-- name: Check local_user_account variable is defined
-  fail: msg='"local_user_account" variable must be defined. This is needed to allow probing of target host to be issued from our ansible host'
-  when: local_user_account is not defined
+#- name: Check local_user_account variable is defined
+#  fail: msg='"local_user_account" variable must be defined. This is needed to allow probing of target host to be issued from our ansible host'
+#  when: local_user_account is not defined
+
+- yum: pkg=libselinux-python state=present
+
 
 - name: "SELinux set to {{ selinux_state }"
-  selinux: state="{{ selinux_state }}"
+  selinux: state="{{ selinux_state }}" policy="{{ selinux_policy }}"
   notify: 
   - reboot
-  - waiting
+  - waiting1
+  - waiting2
   
   
