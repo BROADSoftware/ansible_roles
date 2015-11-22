@@ -1,0 +1,90 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+
+- yum: pkg=zip,openvpn,easy-rsa state=present
+
+- name: Populate /etc/openvpn
+  shell: cp /usr/share/easy-rsa/2.0/* /etc/openvpn
+  args:
+    creates: /etc/openvpn/build-ca
+    
+- name: Adjust certificate subject
+  template:
+    src: vars.j2
+    dest: /etc/openvpn/vars
+    backup: yes
+
+# ================================================= Server setup
+
+- name: Build server certificate (May take quite long time)
+  script: build_server_keys.sh creates=/etc/openvpn/keys/dh2048.pem
+    
+- name: Configure server.conf
+  template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server.conf
+    backup: yes
+  notify:
+   - restart openvpn (c7)
+   - restart openvpn (c6)
+
+- name: Enable openvpn services
+  service:
+    name: openvpn@server.service
+    enabled: yes 
+  when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
+    
+# ================================================= Client bundle build
+    
+- name: Build client key pair
+  script: build_client_keys.sh client creates=/etc/openvpn/keys/client.key
+    
+- name: Create client bundle dir
+  file: path=/etc/openvpn/{{ openvpn_server.client_bundle_name }}-bundle state=directory owner=root group=root mode=0755
+
+- name: Copy client certificate
+  shell: cp keys/{{item}}  {{ openvpn_server.client_bundle_name }}-bundle/{{ openvpn_server.client_bundle_name }}-{{item}}; 
+  args:
+    chdir: /etc/openvpn
+    creates: /etc/openvpn/{{ openvpn_server.client_bundle_name }}-bundle/{{ openvpn_server.client_bundle_name }}-{{item}}
+  with_items:
+    - client.key
+    - client.crt
+    - ca.crt
+    
+- name: Configure client conf
+  template:
+    src: client.ovpn.j2
+    dest: /etc/openvpn/{{ openvpn_server.client_bundle_name }}-bundle/{{ openvpn_server.client_bundle_name }}.ovpn
+    backup: no
+  register: client_conf
+  
+- name: Force a rebuild if client conf has been changed
+  file:
+    path: /etc/openvpn/{{ openvpn_server.client_bundle_name }}-bundle.zip
+    state: absent
+  when: client_conf.changed
+
+- name: build client bundle
+  shell: zip ../{{openvpn_server.client_bundle_name }}-bundle.zip *
+  args:
+    chdir: /etc/openvpn/{{ openvpn_server.client_bundle_name  }}-bundle
+    creates: /etc/openvpn/{{ openvpn_server.client_bundle_name }}-bundle.zip
+
+      
+    
+    

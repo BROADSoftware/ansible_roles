@@ -1,0 +1,71 @@
+# Which local IP address should OpenVPN
+# listen on? (optional)
+;local a.b.c.d
+
+port {{ openvpn_server.server.port }}
+proto udp
+dev tun
+
+ca keys/ca.crt
+cert keys/server.crt
+key keys/server.key  # This file should be kept secret
+
+dh keys/dh2048.pem
+
+topology subnet
+
+server {{openvpn_server.link.network}}  {{ openvpn_server.link.netmask }}
+
+# Coummented out as incompatible with concurent-cn
+;ifconfig-pool-persist ipp.txt
+
+{% if openvpn_server.pushed_routes is defined %}
+{% for route in openvpn_server.pushed_routes %}
+push "route {{ route.network }} {{ route.netmask }}"
+{% endfor %}
+{% endif %}
+
+# Allow all client to share a common certificate
+duplicate-cn
+
+keepalive 10 120
+
+comp-lzo
+
+max-clients 100
+
+# It's a good idea to reduce the OpenVPN
+# daemon's privileges after initialization.
+#
+# You can uncomment this out on
+# non-Windows systems.
+;user nobody
+;group nobody
+
+persist-key
+persist-tun
+
+# Output a short status file showing
+# current connections, truncated
+# and rewritten every minute.
+status openvpn-status.log
+
+log-append  /var/log/openvpn.log
+
+# Set the appropriate level of log
+# file verbosity.
+#
+# 0 is silent, except for fatal errors
+# 4 is reasonable for general usage
+# 5 and 6 can help to debug connection problems
+# 9 is extremely verbose
+verb 3
+
+# Silence repeating messages.  At most 20
+# sequential messages of the same message
+# category will be output to the log.
+;mute 20
+
+# To force user authentication with local login
+plugin /usr/lib64/openvpn/plugins/openvpn-plugin-auth-pam.so login
+

@@ -1,0 +1,33 @@
+client
+
+dev tun
+proto udp
+
+remote {{ openvpn_server.server.public_ip}} {{ openvpn_server.server.port }}
+
+
+resolv-retry infinite
+
+nobind
+
+# Try to preserve some state across restarts.
+persist-key
+persist-tun
+
+ca {{ openvpn_server.client_bundle_name }}-ca.crt
+cert {{ openvpn_server.client_bundle_name }}-client.crt
+key {{ openvpn_server.client_bundle_name }}-client.key
+
+remote-cert-tls server
+
+comp-lzo
+
+# Set log file verbosity.
+verb 3
+
+# Silence repeating messages
+;mute 20
+
+# Request user authentication
+auth-user-pass
+
