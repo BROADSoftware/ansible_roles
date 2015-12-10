@@ -40,7 +40,6 @@ DOCUMENTATION = '''
 ---
 module: command
 short_description: Executes a command on a remote node
-version_added: historical
 description:
      - THIS IS A MODIFIED VERSION OF THE M(command) MODULE which lookup C(creates) and C(removes) files in HDFS instead of local file.
      - The M(hdfs_cmd) module takes a C(cmd) option holding all the command line to be executed 
@@ -53,12 +52,12 @@ options:
       - the command to execute.
     required: true
     default: null
-  creates:
+  hdfs_creates:
     description:
       - an absolute HDFS path, when it already exists, this step will B(not) be run.
     required: no
     default: null
-  removes:
+  hdfs_removes:
     description:
       - an absolute HDFS path, when it does not exist, this step will B(not) be run.
     version_added: "0.8"
@@ -120,23 +119,23 @@ author:
 EXAMPLES = '''
 
 # How to copy a file from the file system of the targeted host to HDFS
-- hdfs_cmd: cmd="sudo -u sa hdfs dfs -put /etc/passwd /user/sa/passwd1" creates=/user/sa/passwd1
+- hdfs_cmd: cmd="sudo -u joe hdfs dfs -put /etc/passwd /user/joe/passwd1" hdfs_creates=/user/joe/passwd1
 
 # Same, using different syntax
-- hdfs_cmd: cmd="sudo -u sa hdfs dfs -put /etc/passwd /user/sa/passwd2"
+- hdfs_cmd: cmd="sudo -u joe hdfs dfs -put /etc/passwd /user/joe/passwd2"
   args:
-    creates: /user/sa/passwd2
+    hdfs_creates: /user/joe/passwd2
     
 # Same, using different syntax
 - name: "Copy passwd3 to hdfs"
   hdfs_cmd: 
-    cmd: sudo -u sa hdfs dfs -put ./passwd /user/sa/passwd3
-    creates: /user/sa/passwd3
+    cmd: sudo -u joe hdfs dfs -put ./passwd /user/joe/passwd3
+    hdfs_creates: /user/joe/passwd3
     chdir: /etc
 
 # Copy the file and adjust permissions using hdfs_file
-- hdfs_cmd: cmd="sudo -u hdfs hdfs dfs -put /etc/passwd /user/sa/passwd4" creates=/user/sa/passwd4
-- hdfs_file: path=/user/sa/passwd4 owner=sa group=users mode=0770
+- hdfs_cmd: cmd="sudo -u hdfs hdfs dfs -put /etc/passwd /user/joe/passwd4" hdfs_creates=/user/joe/passwd4
+- hdfs_file: hdfs_path=/user/joe/passwd4 owner=joe group=users mode=0770
       
 '''
 
@@ -206,8 +205,8 @@ def main():
             uses_shell = dict(type='bool', default=False),
             chdir = dict(),
             executable = dict(),
-            creates = dict(),
-            removes = dict(),
+            hdfs_creates = dict(),
+            hdfs_removes = dict(),
             # -------------- HDFS ADD ON
             hadoop_conf_dir = dict(required=False, default="/etc/hadoop/conf"), 
             webhdfs_endpoint = dict(required=False, default=None),
@@ -220,8 +219,8 @@ def main():
     chdir = module.params['chdir']
     executable = module.params['executable']
     cmd  = module.params['cmd']
-    creates  = module.params['creates']
-    removes  = module.params['removes']
+    hdfs_creates  = module.params['hdfs_creates']
+    hdfs_removes  = module.params['hdfs_removes']
 
     if cmd.strip() == '':
         module.fail_json(rc=256, msg="no command given")
@@ -257,29 +256,29 @@ def main():
         
     webhdfs = WebHDFS(webhdfsEndpoint, auth)    
     
-    if creates:
+    if hdfs_creates:
         # do not run the command if the line contains creates=filename
         # and the filename already exists ON HDFS.  This allows idempotence
         # of command executions.
-        fileStatus = webhdfs.getFileStatus(creates)
+        fileStatus = webhdfs.getFileStatus(hdfs_creates)
         if fileStatus != None:
             module.exit_json(
                 cmd=cmd,
-                stdout="skipped, since %s exists on HDFS" % creates,
+                stdout="skipped, since %s exists on HDFS" % hdfs_creates,
                 changed=False,
                 stderr=False,
                 rc=0
             )
 
-    if removes:
+    if hdfs_removes:
         # do not run the command if the line contains removes=filename
         # and the filename does not exist.  This allows idempotence
         # of command executions.
-        fileStatus = webhdfs.getFileStatus(removes)
+        fileStatus = webhdfs.getFileStatus(hdfs_removes)
         if fileStatus == None:
             module.exit_json(
                 cmd=cmd,
-                stdout="skipped, since %s does not exist on HDFS" % removes,
+                stdout="skipped, since %s does not exist on HDFS" % hdfs_removes,
                 changed=False,
                 stderr=False,
                 rc=0

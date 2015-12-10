@@ -8,6 +8,14 @@
 		<p><a href="http://{{ hostvars[groups['hdfs_nn'][0]]['ansible_fqdn'] }}:50070/" target="hdfs_nn">Namenode</a></p>
 	{% endif %}
 
+	{% if groups['hdfs_pnn'] is defined and hostvars[groups['hdfs_pnn'][0]] is defined %}
+		<p><a href="http://{{ hostvars[groups['hdfs_pnn'][0]]['ansible_fqdn'] }}:50070/" target="hdfs_pnn">Primary Namenode</a></p>
+	{% endif %}
+
+	{% if groups['hdfs_snn'] is defined and hostvars[groups['hdfs_snn'][0]] is defined %}
+		<p><a href="http://{{ hostvars[groups['hdfs_snn'][0]]['ansible_fqdn'] }}:50090/" target="hdfs_snn">Secondary Namenode</a></p>
+	{% endif %}
+
 	{% if groups['yarn_rm'] is defined and hostvars[groups['yarn_rm'][0]] is defined %}
 		<p><a href="http://{{ hostvars[groups['yarn_rm'][0]]['ansible_fqdn'] }}:8088/" target="yarn_rm">Resource Manager</a></p>
 	{% endif %}

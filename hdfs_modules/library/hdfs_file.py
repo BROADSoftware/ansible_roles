@@ -30,7 +30,6 @@ HAS_HTTPLIB2 = False
 DOCUMENTATION = '''
 ---
 module: hdfs_file
-version_added: "historical"
 short_description: Sets attributes of an HDFS file, or create HDFS directory
 description:
      - Sets attributes of HDFS files, and directories, or removes them.
@@ -46,12 +45,11 @@ requirements: [ ]
 author: 
     - "Serge ALEXANDRE"
 options:
-  path:
+  hdfs_path:
     description:
       - 'HDFS path to the file being managed.  Aliases: I(dest), I(name)'
     required: true
     default: None
-    aliases: ['dest', 'name']
   state:
     description:
       - If C(directory), all immediate subdirectories will be created if they
@@ -65,20 +63,35 @@ options:
     choices: [ file, directory, absent ]
   owner:
     description:
-      - Name of the user that should own the file/directory, as would
+      - Name of the user that will own the file/directory, as would
         be fed by HDFS 'FileSystem.setOwner' 
     required: false
     default: None
   group:
     description:
-      - Name of the group that should own the file/directory, as would
+      - Name of the group that will own the file/directory, as would
         be fed by HDFS 'FileSystem.setOwner' 
     required: false
     default: None
   mode:
     description:
-      - Mode (Permission) the file or directory should be, such as 0644 as would be
+      - Mode (Permission) the file or directory will be set, such as 0644 as would be
         fed by HDFS 'FileSystem.setPermission' 
+    required: false
+    default: None
+  default_owner:
+    description:
+      - Name of the user that will own the directory in case of creation. Existing directory will not be modified.
+    required: false
+    default: None
+  default_group:
+    description:
+      - Name of the group that will own the directory in case of creation. Existing directory will not be modified.
+    required: false
+    default: None
+  default_mode:
+    description:
+      - Mode (Permission) the directory will be set in case of creation. Existing directory will not be modified.
     required: false
     default: None
   hadoop_conf_dir:
@@ -110,19 +123,23 @@ EXAMPLES = '''
 
 # Create a directory if it doesn't exist. 
 # If already existing, adjust owner, group and mode if different.
-- hdfs_file: path=/user/joe/some_directory owner=joe group=users mode=0755 state=directory
+- hdfs_file: hdfs_path=/user/joe/some_directory owner=joe group=users mode=0755 state=directory
 
 # Remove this folder.
-- hdfs_file: path=/user/joe/some_directory state=absent
+- hdfs_file: hdfs_path=/user/joe/some_directory state=absent
 
 # Change permission. Only hdfs user will be able to access this file or folder.
-- hdfs_file: path=/user/hdfs/some_file_or_folder owner=hdfs group=hdfs mode=0700
+- hdfs_file: hdfs_path=/user/hdfs/some_file_or_folder owner=hdfs group=hdfs mode=0700
 
 # Change only permission on a file. Leave owner and group unchanged
 - name: Change permission on this_file
   hdfs_file:
-    path: /usr/joe/some_file
+    hdfs_path: /usr/joe/some_file
     mode: 0600
+
+# Ensure the directory exists. If yes, don't touch it. If no, create it with provided default_xxxx valules.
+- hdfs_file: hdfs_path=/user/joe/may_exist_directory default_owner=joe default_group=users default_mode=0755 state=directory
+
 
 '''
 
@@ -256,17 +273,19 @@ def checkCompletion(webhdfs, p):
                 error("Was unable to switch permission to {0}. Still {1}", p.mode, fs.permission) 
                 
                 
-                
 def main():
     
     global module
     module = AnsibleModule(
         argument_spec = dict(
             state = dict(required=False, choices=['file','directory','absent']),
-            path  = dict(aliases=['dest', 'name'], required=True),
+            hdfs_path  = dict(required=True),
             owner = dict(required=False),
             group = dict(required=False),
             mode = dict(required=False),
+            default_owner = dict(required=False),
+            default_group = dict(required=False),
+            default_mode = dict(required=False),
             hadoop_conf_dir = dict(required=False, default="/etc/hadoop/conf"),
             webhdfs_endpoint = dict(required=False, default=None),
             auth = dict(required=False, default="user.name=hdfs")
@@ -281,10 +300,13 @@ def main():
     
     p = Parameters()
     p.state = module.params['state']
-    p.path = module.params['path']
+    p.path = module.params['hdfs_path']
     p.owner = module.params['owner']
     p.group = module.params['group']
     p.mode = module.params['mode']
+    p.default_owner = module.params['default_owner']
+    p.default_group = module.params['default_group']
+    p.default_mode = module.params['default_mode']
     p.hadoopConfDir = module.params['hadoop_conf_dir']
     p.webhdfsEndpoint = module.params['webhdfs_endpoint']
     p.auth = module.params['auth']
@@ -300,6 +322,21 @@ def main():
         p.mode = oct(p.mode).lstrip("0")
         #print '{ mode_type: "' + str(type(p.mode)) + '",  mode_value: "' + str(p.mode) + '"}'
 
+    if p.default_mode != None:
+        if not isinstance(p.default_mode, int):
+            try:
+                p.default_mode = int(p.default_mode, 8)
+            except Exception:
+                error("default_mode must be in octal form")
+    
+        p.default_mode = oct(p.default_mode).lstrip("0")
+
+    if(p.owner != None and p.default_owner != None):
+        error("There is no reason to define both owner and default_owner")
+    if(p.group != None and p.default_group != None):
+        error("There is no reason to define both group and default_group")
+    if(p.mode != None and p.default_mode != None):
+        error("There is no reason to define both mode and default_mode")
 
     if not p.path.startswith("/"):
         error("Path '{0}' is not absolute. Absolute path is required!", p.path)
@@ -335,11 +372,14 @@ def main():
         else:
             p.changed = True
             if not p.check_mode:
-                webhdfs.createFolder(p.path, p.mode)
-                if p.owner != None:
-                    webhdfs.setOwner(p.path, p.owner)
-                if p.group != None:
-                    webhdfs.setGroup(p.path, p.group)
+                owner = p.default_owner if p.owner is None else p.owner
+                group = p.default_group if p.group is None else p.group
+                mode = p.default_mode if p.mode is None else p.mode
+                webhdfs.createFolder(p.path, mode)
+                if owner != None:
+                    webhdfs.setOwner(p.path, owner)
+                if group != None:
+                    webhdfs.setGroup(p.path, group)
     else:
         if p.state == None:
             checkAndAdjustAttributes(webhdfs, fileStatus, p)
