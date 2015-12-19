@@ -1,0 +1,11 @@
+-- set hive.execution.engine=tez;
+USE {{tpcds_hive_db}};
+SELECT ca.ca_state, c.c_first_name, c.c_last_name, d.d_date, i.i_class, i.i_category
+FROM web_sales AS ws 
+INNER JOIN customer AS c ON ws.ws_bill_customer_sk = c.c_customer_sk
+INNER JOIN customer_address AS ca ON c.c_current_addr_sk = ca.ca_address_sk
+INNER JOIN item AS i ON i.i_item_sk = ws.ws_item_sk
+INNER JOIN date_dim AS d ON d.d_date_sk = ws.ws_sold_date_sk
+WHERE ca.ca_state = 'IA' AND i.i_class = 'pop' AND i.i_category = 'Music'
+ORDER BY d.d_date
+LIMIT 5000;

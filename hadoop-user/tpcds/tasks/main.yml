@@ -1,0 +1,65 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+- yum: pkg=gcc,unzip state=present
+  
+- name: Create local folder
+  file:  path={{tpcds_unix_folder}} state=directory owner={{tpcds_user}} group={{tpcds_group}} mode=0755
+
+# Create a working folder in user's home
+- hdfs_file: hdfs_path={{tpcds_hdfs_folder}} default_owner={{tpcds_user}} default_group={{tpcds_group}} default_mode=0755 state=directory
+
+
+- get_url: url={{misc_repository_url}}/DSGen_v1.1.0.zip dest={{tpcds_unix_folder}}/DSGen_v1.1.0.zip
+  
+- name: Build DSGen
+  raw: su - {{tpcds_user}} -c "cd {{tpcds_unix_folder}}; unzip -u DSGen_v1.1.0.zip; cd tools; make"
+  args:
+    creates: "{{tpcds_unix_folder}}/tools/dsdgen"
+
+- file: path=/{{tpcds_unix_folder}}/data1  owner={{tpcds_user}} group={{tpcds_group}} state=directory mode=0755
+- name: Generate data ({{tpcds_size_gb}}G). Will take some times
+  shell: cd {{tpcds_unix_folder}}/tools/; ./dsdgen -dir {{tpcds_unix_folder}}/data1 -scale {{tpcds_size_gb}}
+  args:
+    creates: "{{tpcds_unix_folder}}/data1/web_sales.dat"
+      
+- template:
+    src: "{{item}}.j2"
+    dest: "{{tpcds_unix_folder}}/{{item}}"
+    owner: "{{tpcds_user}}"
+    group: "{{tpcds_group}}"
+    mode: 0644
+  with_items:
+  - create_db.hql
+  - load_db.hql
+  - request1.hql
+  - request2.hql
+  - toOrc.hql
+
+- name: Create tpcds database and schema
+  hdfs_cmd:
+    cmd: sudo -u {{tpcds_user}} hive -f {{tpcds_unix_folder}}/create_db.hql
+    hdfs_creates: "{{tpcds_hdfs_folder}}/db/{{tpcds_hive_db}}"
+  
+- name: Load data in HDFS
+  hdfs_cmd:
+    cmd: sudo -u {{tpcds_user}} hive -f  {{tpcds_unix_folder}}/load_db.hql
+    hdfs_creates: "{{tpcds_hdfs_folder}}/db/{{tpcds_hive_db}}/call_center/call_center.dat"
+  
+     
+     
+     
+    

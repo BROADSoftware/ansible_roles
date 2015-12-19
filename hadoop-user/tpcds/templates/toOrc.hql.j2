@@ -1,0 +1,38 @@
+--
+-- Only if ORC is supported !!
+--
+-- To launch by hive -f toOrc.hql
+--
+
+
+CREATE DATABASE IF NOT EXISTS {{tpcds_hive_db}}_orc LOCATION '{{tpcds_hdfs_folder}}/db/{{tpcds_hive_db}}_orc';
+
+
+create table {{tpcds_hive_db}}_orc.call_center STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.call_center;
+create table {{tpcds_hive_db}}_orc.catalog_page STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.catalog_page;
+create table {{tpcds_hive_db}}_orc.catalog_returns STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.catalog_returns;
+create table {{tpcds_hive_db}}_orc.catalog_sales STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.catalog_sales;
+create table {{tpcds_hive_db}}_orc.customer_address STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.customer_address;
+create table {{tpcds_hive_db}}_orc.customer STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.customer;
+create table {{tpcds_hive_db}}_orc.customer_demographics STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.customer_demographics;
+create table {{tpcds_hive_db}}_orc.date_dim STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.date_dim;
+create table {{tpcds_hive_db}}_orc.dbgen_version STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.dbgen_version;
+create table {{tpcds_hive_db}}_orc.household_demographics STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.household_demographics;
+create table {{tpcds_hive_db}}_orc.income_band STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.income_band;
+create table {{tpcds_hive_db}}_orc.inventory STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.inventory;
+create table {{tpcds_hive_db}}_orc.item STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.item;
+create table {{tpcds_hive_db}}_orc.promotion STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.promotion;
+create table {{tpcds_hive_db}}_orc.reason STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.reason;
+create table {{tpcds_hive_db}}_orc.ship_mode STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.ship_mode;
+create table {{tpcds_hive_db}}_orc.store STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.store;
+create table {{tpcds_hive_db}}_orc.store_returns STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.store_returns;
+create table {{tpcds_hive_db}}_orc.store_sales STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.store_sales;
+create table {{tpcds_hive_db}}_orc.time_dim STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.time_dim;
+create table {{tpcds_hive_db}}_orc.warehouse STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.warehouse;
+create table {{tpcds_hive_db}}_orc.web_page STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.web_page;
+create table {{tpcds_hive_db}}_orc.web_returns STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.web_returns;
+create table {{tpcds_hive_db}}_orc.web_sales STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.web_sales;
+create table {{tpcds_hive_db}}_orc.web_site STORED AS ORC AS SELECT * FROM {{tpcds_hive_db}}.web_site;
+
+
+

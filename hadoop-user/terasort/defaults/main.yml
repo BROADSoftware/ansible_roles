@@ -15,9 +15,20 @@
 #
 
 
-- file: path=/var/ansible.ok  state=directory mode=0755
+# This user must be create prior to this role
+# terasort_user: xxxx
 
-- name: Create {{folder}} folder
-  shell: sudo -u hdfs hdfs dfs -mkdir -p {{folder}};sudo -u hdfs hdfs dfs -chown {{user}} {{folder}};sudo -u hdfs hdfs dfs -chgrp {{group}} {{folder}};sudo -u hdfs hdfs dfs -chmod {{mode}} {{folder}}; touch /var/ansible.ok/folder_{{folder.replace("/", "_")}}_{{user}}_{{group}}_{{mode}}; exit 
-  args:
-    creates: /var/ansible.ok/folder_{{folder.replace("/", "_")}}_{{user}}_{{group}}_{{mode}}
+terasort_group: "{{terasort_user}}"
+
+# Working folder. Created if not existing. Cleaned if terasort_reset == true
+terasort_hdfs_folder: "/user/{{terasort_user}}/terasort"
+
+# Allow to force a full cleanup/rerun (Defeat idempotency)
+terasort_reset: false
+
+# Number of 100 bytes rows
+terasort_size: 10
+
+terasort_hadoop_folder:  /usr/hdp/current
+
+

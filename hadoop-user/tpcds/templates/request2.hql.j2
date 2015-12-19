@@ -1,0 +1,11 @@
+-- set hive.execution.engine=tez;
+use {{tpcds_hive_db}};
+SELECT ca.ca_state, i.i_class, SUM(ws.ws_quantity) AS qty
+FROM web_sales AS ws 
+INNER JOIN customer AS c ON ws.ws_bill_customer_sk = c.c_customer_sk
+INNER JOIN customer_address AS ca ON c.c_current_addr_sk = ca.ca_address_sk
+INNER JOIN item AS i ON i.i_item_sk = ws.ws_item_sk
+WHERE i.i_category = 'Music'
+GROUP BY ca.ca_state, i.i_class
+ORDER BY qty DESC
+LIMIT 20;

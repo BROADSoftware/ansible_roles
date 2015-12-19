@@ -1,0 +1,4 @@
+
+dependencies:
+  - hadoop-user/hdfs_modules
+  

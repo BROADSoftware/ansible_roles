@@ -14,26 +14,20 @@
 #limitations under the License.
 #
 
-    
-- name: reload service file
-  command: "systemctl daemon-reload"
-  
 
-- name: restart hdfs-nn
-  service: 
-    name: hdfs-pnn
-    state: restarted
-  when: ansible_nodename in groups['hdfs_pnn']
-  service: 
-    name: hdfs-snn
-    state: restarted
-  when: ansible_nodename in groups['hdfs_snn']
+# This user must be create prior to this role
+# tpcds_user: xxxx
 
-- name: restart hdfs-dn
-  service: 
-    name: hdfs-dn
-    state: restarted
-  when: ansible_nodename in groups['hdfs_dn']
-    
-  
-  
+tpcds_group: "{{tpcds_user}}"
+
+# This last will be create if not existing
+
+tpcds_hdfs_folder: "/user/{{tpcds_user}}/tpcds"
+
+tpcds_unix_folder: "/home/{{tpcds_user}}/tpcds"
+
+tpcds_hive_db: tpcds
+
+tpcds_size_gb: 1
+
+

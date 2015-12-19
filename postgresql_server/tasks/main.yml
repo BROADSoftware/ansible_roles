@@ -56,7 +56,7 @@
     enabled: yes 
    
 - name: Set password for postgres main account
-  shell: psql --command  "ALTER USER Postgres WITH PASSWORD '{{postgres_password}}'";
+  shell: psql --command  "ALTER USER postgres WITH PASSWORD '{{postgres_password}}'";
   become: yes
   become_user: postgres
   changed_when: false
