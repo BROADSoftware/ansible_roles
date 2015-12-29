@@ -22,8 +22,8 @@
   template:
     src: index.html.j2
     dest: "/var/www/html/index.html"
-    owner: yarn
-    group: hadoop
+    owner: root
+    group: root
     mode: 0644
     backup: yes    
     

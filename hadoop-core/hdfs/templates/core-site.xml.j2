@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<configuration>
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://{{ hostvars[groups['hdfs_pnn'][0]]['ansible_fqdn'] }}:8020</value>
+  </property>
+</configuration>
+
+

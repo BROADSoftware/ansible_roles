@@ -19,16 +19,22 @@
   fail: msg="'hdfs_user' variable must be defined."
   when: hdfs_user is not defined
 
-- name: Check if group 'hadoop_clients' exists and not empty 
-  fail: msg="Group 'hadoop_clients' must be defined and not empty!"
-  when: groups['hadoop_clients'] is not defined or hostvars[groups['hadoop_clients'][0]] is not defined
+- name: Check if a group 'hdfs_pnn' exists and not empty 
+  fail: msg="A group 'hdfs_pnn' must be defined and not empty!"
+  when: groups['hdfs_pnn'] is not defined or hostvars[groups['hdfs_pnn'][0]] is not defined
 
 - name: Ensure {{hdfs_user}} exists as Unix account on all hosts
   user: name={{hdfs_user}} state=present
 
 - name: Ensure {{hdfs_user}} home in HDFS
-  hdfs_file: hdfs_path=/user/{{hdfs_user}} default_owner={{hdfs_user}} default_group={{hdfs_user}} default_mode=0755 state=directory
-  when: hostvars[groups['hadoop_clients'][0]]['ansible_nodename']  == ansible_nodename
+  hdfs_file: 
+    hdfs_path: "/user/{{hdfs_user}}" 
+    default_owner: "{{hdfs_user}}"
+    default_group: "{{hdfs_user}}" 
+    default_mode: 0755 
+    state: directory 
+    webhdfs_endpoint: "{{hostvars[groups['hdfs_pnn'][0]]['ansible_nodename']}}:50070"
+  when: hostvars[groups['hdfs_pnn'][0]]['ansible_nodename']  == ansible_nodename
 
   
   

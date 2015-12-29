@@ -29,6 +29,18 @@ terasort_reset: false
 # Number of 100 bytes rows
 terasort_size: 10
 
-terasort_hadoop_folder:  /usr/hdp/current
+# Haddop distribution dependant:
+#
+# For raw apache distribution:
+# hadoop_examples_jar: "/opt/hadoop-{{hadoop_version}}/share/hadoop/mapreduce/hadoop-mapreduce-examples-{{hadoop_version}}.jar"
+
+# For HDP distribution:
+# hadoop_examples_jar: "/usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-*.jar"
+#
+# Of course, this should be set in your scripts, not by modifying this one.
+
+
+# Also to be defined in calling scripts.
+# webhdfs_endpoint: "{{hostvars[groups['hdfs_pnn'][0]]['ansible_nodename']}}:50070"
 
 

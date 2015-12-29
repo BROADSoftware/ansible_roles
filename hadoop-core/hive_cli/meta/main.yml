@@ -1,0 +1,6 @@
+---
+
+dependencies:
+  - { role: hadoop-user/hdfs_modules }
+ 
+  

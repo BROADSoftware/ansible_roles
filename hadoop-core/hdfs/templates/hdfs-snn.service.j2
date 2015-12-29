@@ -1,0 +1,18 @@
+[Unit]
+Description=HDFS Secondary Name Node 
+
+[Service]
+User=hdfs
+Group=hadoop
+SyslogIdentifier=hdfs_snn
+TimeoutStartSec=0
+TimeoutStopSec=0
+Restart=always
+Type=forking
+PIDFile=/var/run/hdfs/hadoop-hdfs-secondarynamenode.pid
+ExecStart=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/hadoop-daemon.sh --script hdfs start secondarynamenode
+ExecStop=/bin/bash /opt/hadoop-{{ hadoop_version }}/sbin/hadoop-daemon.sh --script hdfs stop secondarynamenode
+
+[Install]
+WantedBy=multi-user.target
+

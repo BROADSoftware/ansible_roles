@@ -1,0 +1,4 @@
+---
+
+hadoop_tgz_url: "{{ misc_repository_url }}/hadoop-{{ hadoop_version }}.tar.gz"
+

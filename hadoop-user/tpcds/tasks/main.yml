@@ -14,13 +14,24 @@
 #limitations under the License.
 #
 
-- yum: pkg=gcc,unzip state=present
+
+- name: Check if 'webhdfs_endpoint' variable is defined
+  fail: msg="'webhdfs_endpoint' variable must be defined."
+  when: webhdfs_endpoint is not defined
+
+- yum: pkg=gcc,unzip,make state=present
   
 - name: Create local folder
   file:  path={{tpcds_unix_folder}} state=directory owner={{tpcds_user}} group={{tpcds_group}} mode=0755
 
-# Create a working folder in user's home
-- hdfs_file: hdfs_path={{tpcds_hdfs_folder}} default_owner={{tpcds_user}} default_group={{tpcds_group}} default_mode=0755 state=directory
+- name: Create a working folder in user's home
+  hdfs_file: 
+    hdfs_path: "{{tpcds_hdfs_folder}}" 
+    default_owner: "{{tpcds_user}}"
+    default_group: "{{tpcds_group}}" 
+    default_mode: 0755 
+    state: directory
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
 
 
 - get_url: url={{misc_repository_url}}/DSGen_v1.1.0.zip dest={{tpcds_unix_folder}}/DSGen_v1.1.0.zip
@@ -53,11 +64,13 @@
   hdfs_cmd:
     cmd: sudo -u {{tpcds_user}} hive -f {{tpcds_unix_folder}}/create_db.hql
     hdfs_creates: "{{tpcds_hdfs_folder}}/db/{{tpcds_hive_db}}"
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
   
 - name: Load data in HDFS
   hdfs_cmd:
     cmd: sudo -u {{tpcds_user}} hive -f  {{tpcds_unix_folder}}/load_db.hql
     hdfs_creates: "{{tpcds_hdfs_folder}}/db/{{tpcds_hive_db}}/call_center/call_center.dat"
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
   
      
      

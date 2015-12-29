@@ -1,7 +1,0 @@
----
-
-dependencies:
-  - { role: yaegashi.blockinfile }
-  - { role: hadoop/common_download }
- 
-  

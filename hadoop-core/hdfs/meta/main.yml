@@ -1,0 +1,8 @@
+---
+
+dependencies:
+  - { role: yaegashi.blockinfile }
+  - { role: hadoop-core/common_download }
+  - { role: hadoop-user/hdfs_modules }
+ 
+  

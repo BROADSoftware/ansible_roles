@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+
+<configuration>
+	<!-- ==================== Namenode configuration ===================== -->
+	
+     <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+
+{% if ansible_nodename in groups['hdfs_pnn'] %}    
+     <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>{{hdfs_pnn_data_folder | join(",")}}</value>
+    </property>
+{% endif %}
+    
+     <property>
+        <name>dfs.blocksize</name>
+        <value>67108864</value>
+        <comment>64M</comment>
+    </property>
+
+    <property>
+      <name>dfs.namenode.http-address</name>
+	  <value>{{ hostvars[groups['hdfs_pnn'][0]]['ansible_fqdn'] }}:50070</value>
+      <description>
+        The address and the base port where the dfs namenode web ui will listen on.
+      </description>
+    </property>
+  
+
+	<!-- ==================== Secondary Namenode configuration ===================== -->
+	
+{% if ansible_nodename in groups['hdfs_snn'] %}    
+     <property>
+        <name>dfs.namenode.checkpoint.dir</name>
+        <value>{{hdfs_snn_data_folder | join(",")}}</value>
+    </property>
+{% endif %}
+    
+	
+	<!-- ==================== Datanode configuration ===================== -->
+    
+{% if ansible_nodename in groups['hdfs_dn'] %}    
+     <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>{{hdfs_dn_data_folder | join(",")}}</value>
+    </property>
+{% endif %}
+	
+	<!-- ==================== Permissions configuration ===================== -->
+    
+    <property>
+      <name>dfs.permissions.enabled</name>
+      <value>true</value>
+    </property>
+
+    <property>
+      <name>dfs.permissions.superusergroup</name>
+      <value>hdfs</value>
+    </property>
+    
+</configuration>
+
+

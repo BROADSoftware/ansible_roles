@@ -15,17 +15,39 @@
 #
 
 
+- name: Check if 'webhdfs_endpoint' variable is defined
+  fail: msg="'webhdfs_endpoint' variable must be defined."
+  when: webhdfs_endpoint is not defined
+
 - name: Check if 'terasort_user' variable is defined
   fail: msg="'terasort_user' variable must be defined."
   when: terasort_user is not defined
 
+- name: Check if 'hadoop_examples_jar' variable is defined
+  fail: msg="'hadoop_examples_jar' variable must be defined."
+  when: hadoop_examples_jar is not defined
+
+- stat: path={{hadoop_examples_jar}}
+  register: ex_jar
+- fail: msg="Unable to find {{hadoop_examples_jar}}"
+  when: ex_jar.stat.isreg is not defined or not ex_jar.stat.isreg 
+
+
+
 # Create a working folder in user's home
-- hdfs_file: hdfs_path=/user/{{terasort_user}}/terasort default_owner={{terasort_user}} default_group={{terasort_group}} default_mode=0755 state=directory
+- hdfs_file: 
+    hdfs_path: /user/{{terasort_user}}/terasort 
+    default_owner: "{{terasort_user}}" 
+    default_group: "{{terasort_group}}" 
+    default_mode: 0755 
+    state: directory
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
 
 - name: Delete previous run results
   hdfs_file: 
     hdfs_path: "{{item}}"
     state: absent
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
   with_items:
   - /user/{{terasort_user}}/terasort/teragenout
   - /user/{{terasort_user}}/terasort/terasortout
@@ -34,20 +56,23 @@
 
 - name: Run teragen
   hdfs_cmd:
-    cmd: "sudo -u {{terasort_user}} {{terasort_hadoop_folder}}/hadoop-client/bin/hadoop jar  {{terasort_hadoop_folder}}/hadoop-mapreduce-client/hadoop-mapreduce-examples-*.jar teragen {{terasort_size}} /user/{{terasort_user}}/terasort/teragenout"
+    cmd: "sudo -u {{terasort_user}} yarn jar {{hadoop_examples_jar}} teragen {{terasort_size}} /user/{{terasort_user}}/terasort/teragenout"
     hdfs_creates: /user/{{terasort_user}}/terasort/teragenout/_SUCCESS
     uses_shell: true
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
     
 - name: Run terasort
   hdfs_cmd:
-    cmd: "sudo -u {{terasort_user}} {{terasort_hadoop_folder}}/hadoop-client/bin/hadoop jar  {{terasort_hadoop_folder}}/hadoop-mapreduce-client/hadoop-mapreduce-examples-*.jar terasort /user/{{terasort_user}}/terasort/teragenout /user/{{terasort_user}}/terasort/terasortout"
+    cmd: "sudo -u {{terasort_user}} yarn jar {{hadoop_examples_jar}} terasort /user/{{terasort_user}}/terasort/teragenout /user/{{terasort_user}}/terasort/terasortout"
     hdfs_creates: /user/{{terasort_user}}/terasort/terasortout/_SUCCESS
     uses_shell: true
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
     
 - name: Run teravalidate
   hdfs_cmd:
-    cmd: "sudo -u {{terasort_user}} {{terasort_hadoop_folder}}/hadoop-client/bin/hadoop jar  {{terasort_hadoop_folder}}/hadoop-mapreduce-client/hadoop-mapreduce-examples-*.jar teravalidate /user/{{terasort_user}}/terasort/terasortout /user/{{terasort_user}}/terasort/teravalidateout"
+    cmd: "sudo -u {{terasort_user}} yarn jar {{hadoop_examples_jar}}  teravalidate /user/{{terasort_user}}/terasort/terasortout /user/{{terasort_user}}/terasort/teravalidateout"
     hdfs_creates: /user/{{terasort_user}}/terasort/teravalidateout/_SUCCESS
     uses_shell: true
+    webhdfs_endpoint: "{{webhdfs_endpoint}}"
     
     

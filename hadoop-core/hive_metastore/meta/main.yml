@@ -1,0 +1,6 @@
+---
+
+dependencies:
+  - hadoop-core/hive_cli
+ 
+  
