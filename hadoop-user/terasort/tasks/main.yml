@@ -27,10 +27,11 @@
   fail: msg="'hadoop_examples_jar' variable must be defined."
   when: hadoop_examples_jar is not defined
 
-- stat: path={{hadoop_examples_jar}}
-  register: ex_jar
-- fail: msg="Unable to find {{hadoop_examples_jar}}"
-  when: ex_jar.stat.isreg is not defined or not ex_jar.stat.isreg 
+# Removed, as we want to allow variable to be able to include glob extention. (i.e ....xxxx-*.jar)
+#- stat: path={{hadoop_examples_jar}}
+#  register: ex_jar
+#- fail: msg="Unable to find {{hadoop_examples_jar}}"
+#  when: ex_jar.stat.isreg is not defined or not ex_jar.stat.isreg 
 
 
 
