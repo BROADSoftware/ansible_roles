@@ -18,7 +18,7 @@
 
 # list of brokers used for bootstrapping knowledge about the rest of the cluster
 # format: host1:port1,host2:port2 ...
-metadata.broker.list={% for host in groups['brokers'] %}{% if not loop.first %},{% endif %}{{  hostvars[host]['ansible_fqdn'] }}:9092{% endfor %}
+metadata.broker.list={% for host in groups['kafka_brokers'] %}{% if not loop.first %},{% endif %}{{  hostvars[host]['ansible_fqdn'] }}:9092{% endfor %}
 
 # name of the partitioner class for partitioning events; default partition spreads data randomly
 #partitioner.class=

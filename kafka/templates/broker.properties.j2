@@ -17,7 +17,7 @@
 ############################# Server Basics #############################
 
 # The id of the broker. This must be set to a unique integer for each broker.
-broker.id={% for host in groups['brokers']  %}{% if hostvars[host]['ansible_hostname'] == ansible_hostname %}{{ loop.index }}{% endif %}{% endfor %}
+broker.id={% for host in groups['kafka_brokers']  %}{% if hostvars[host]['ansible_hostname'] == ansible_hostname %}{{ loop.index }}{% endif %}{% endfor %}
 
 
 ############################# Socket Server Settings #############################
