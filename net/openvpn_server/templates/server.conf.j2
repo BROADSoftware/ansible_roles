@@ -4,7 +4,27 @@
 
 port {{ openvpn_server.server.port }}
 proto udp
+
+
+{% if openvpn_server.mode == 'routing' %}
 dev tun
+server {{openvpn_server.link.network}}  {{ openvpn_server.link.netmask }}
+{% if openvpn_server.pushed_routes is defined %}
+{% for route in openvpn_server.pushed_routes %}
+push "route {{ route.network }} {{ route.netmask }}"
+{% endfor %}
+{% endif %}
+{%endif%}
+
+{% if openvpn_server.mode == 'bridge' %}
+dev tap
+server-bridge {{openvpn_server.bridge.ip}} {{openvpn_server.bridge.netmask}} {{openvpn_server.bridge.pool_start}} {{openvpn_server.bridge.pool_end}}
+up {{openvpn_server.instance}}-bridge-start
+down {{openvpn_server.instance}}-bridge-stop
+script-security 2
+{%endif%}
+
+topology subnet
 
 ca keys/ca.crt
 cert keys/server.crt
@@ -12,18 +32,9 @@ key keys/server.key  # This file should be kept secret
 
 dh keys/dh2048.pem
 
-topology subnet
-
-server {{openvpn_server.link.network}}  {{ openvpn_server.link.netmask }}
-
 # Coummented out as incompatible with concurent-cn
 ;ifconfig-pool-persist ipp.txt
 
-{% if openvpn_server.pushed_routes is defined %}
-{% for route in openvpn_server.pushed_routes %}
-push "route {{ route.network }} {{ route.netmask }}"
-{% endfor %}
-{% endif %}
 
 # Allow all client to share a common certificate
 duplicate-cn
@@ -50,7 +61,7 @@ persist-tun
 # and rewritten every minute.
 status openvpn-status.log
 
-log-append  /var/log/openvpn.log
+log-append  /var/log/openvpn-{{openvpn_server.instance}}.log
 
 # Set the appropriate level of log
 # file verbosity.

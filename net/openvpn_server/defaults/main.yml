@@ -18,6 +18,7 @@
 # WARNNG: All value must be set. Exept pushed_routes which can be an empty list.
 
 #openvpn_server:
+#  instance: server
 #  client_bundle_name: my-connection
 #  server:
 #    public_ip: 1.1.1.1

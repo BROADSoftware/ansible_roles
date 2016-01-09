@@ -18,7 +18,7 @@
 - name: Yum install Ambari server
   yum: pkg=ambari-server
   
-- name: Test if setup os performed
+- name: Test if setup is already performed
   shell: 'grep server.os_family /etc/ambari-server/conf/ambari.properties || echo "notDef"'
   register: ambari_server_os_family
   always_run: yes

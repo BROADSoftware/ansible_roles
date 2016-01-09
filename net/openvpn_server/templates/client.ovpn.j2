@@ -1,10 +1,17 @@
 client
 
+{% if openvpn_server.mode == 'routing' %}
 dev tun
+{% endif %}
+
+
+{% if openvpn_server.mode == 'bridge' %}
+dev tap
+{% endif %}
+
 proto udp
 
 remote {{ openvpn_server.server.public_ip}} {{ openvpn_server.server.port }}
-
 
 resolv-retry infinite
 

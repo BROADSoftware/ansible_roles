@@ -4,7 +4,7 @@ selinux_with_reboot_host_to_probe: "{{ ansible_ssh_host }}"
 selinux_with_reboot_port_to_probe: 22
 
 selinux_with_reboot_delay: 30
-selinux_with_reboot_timeout: 300
+selinux_with_reboot_timeout: 600
 
 selinux_policy: "targeted"
 

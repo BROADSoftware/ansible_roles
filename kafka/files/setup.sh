@@ -22,15 +22,18 @@ rm -f /usr/share/java/kafka/*-javadoc.jar
 rm -f /usr/share/java/kafka/*-scaladoc.jar
 rm -f /usr/share/java/kafka/*-sources.jar
 
-chown kafka /usr/share/java/kafka/*.jar
-chgrp kafka /usr/share/java/kafka/*.jar
+chown kafka:kafka /usr/share/java/kafka/*.jar
 chmod 0644 /usr/share/java/kafka/*.jar
 
 
 cp kafka_${KAFKA_VERSION}/bin/kafka-*.sh /usr/bin
-chown root /usr/bin/kafka-*.sh
-chgrp root /usr/bin/kafka-*.sh
+chown root:root /usr/bin/kafka-*.sh
 chmod 0755 /usr/bin/kafka-*.sh
+
+cp kafka_${KAFKA_VERSION}/bin/connect-*.sh /usr/bin
+chown root:root /usr/bin/connect-*.sh
+chmod 0755 /usr/bin/connect-*.sh
+
 
 cd ..
 rm -rf $WD
