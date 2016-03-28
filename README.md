@@ -1,4 +1,6 @@
-# Ansible_roles
+# DEPECATED: Replaced by bsx-roles
+
+## Ansible_roles
 
 A set of ansible rules aimed to install stuff from NoSQL/Hadoop world.
 
